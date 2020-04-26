@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form
+	xmlns="http://schema.picoe.ca/eto.forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	Title="AstroShutter - [New plan]"
+	ClientSize="800, 480"
+	Padding="10">
+    <Form.Menu>
+        <MenuBar>
+            <ButtonMenuItem Text="F&amp;ile">
+                <ButtonMenuItem Text="New" Shortcut="{On Control+N, Mac=Application+N}" />
+                <ButtonMenuItem Text="Open" Shortcut="{On Control+O, Mac=Application+O}" />
+                <ButtonMenuItem Text="Discard" Shortcut="{On Control+Shift+C, Mac=Application+Shift+C}" />
+                <SeparatorMenuItem></SeparatorMenuItem>
+                <ButtonMenuItem Text="Save" Shortcut="{On Control+S, Mac=Application+S}" />
+                <ButtonMenuItem Text="Save As" Shortcut="{On Control+Shift+S, Mac=Application+Shift+S}" />
+                <SeparatorMenuItem></SeparatorMenuItem>
+                <ButtonMenuItem Text="Exit" Shortcut="{On Control+Q, Mac=Application+Q}" Click="HandleQuit" />
+            </ButtonMenuItem>
+
+			<ButtonMenuItem Text="Camera">
+                <ButtonMenuItem Text="Connect" x:Name="connectBtn" Shortcut="{On Control+Shift+C, Mac=Application+Shift+N}" Click="connectBtn_Click" />
+                <ButtonMenuItem Text="Disconnect" x:Name="disconnectBtn" Enabled="false" Shortcut="{On Control+Shift+D, Mac=Application+Shift+N}" Click="disconnectBtn_Click" />
+            </ButtonMenuItem>
+        </MenuBar>
+    </Form.Menu>
+</Form>
