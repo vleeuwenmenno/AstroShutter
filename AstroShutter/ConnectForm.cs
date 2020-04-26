@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
 using Eto.Serialization.Xaml;
-using SharpCamera;
 using System.Timers;
+using AstroShutter.CliWrapper;
 
 namespace AstroShutter
 {	
@@ -14,7 +14,7 @@ namespace AstroShutter
 		Button connBtn;
 		public int selectedCamera = 0;
 
-		List<TetheredCamera> cameras;
+		List<Camera> cameras;
 		Timer cameraWatch;
 
 		public ConnectForm()
@@ -27,9 +27,9 @@ namespace AstroShutter
 			cameraList.SelectedIndexChanged += new EventHandler<EventArgs>(cameraList_selectedIndexChanged);
 			cameraList.MouseDoubleClick += new EventHandler<MouseEventArgs>(cameraList_mouseDoubleClick);
 
-			foreach (TetheredCamera cam in TetheredCamera.Scan())
+			foreach (Camera cam in Cli.AutoDetect())
 			{
-				cameraList.Items.Add($"{cam.Name} (Port: {cam.USBPort})");
+				cameraList.Items.Add($"{cam.model} (Port: {cam.port})");
 			}
 
 			connBtn = new Button { Text = "Connect", Enabled = false };
@@ -61,13 +61,13 @@ namespace AstroShutter
 
         private void cameraWatch_elapsed(object sender, ElapsedEventArgs e)
         {
-            if (cameras.Count != TetheredCamera.Scan().Count)
+            if (cameras.Count != Cli.AutoDetect().Count)
 			{
 				cameraList.Items.Clear();
-				cameras = TetheredCamera.Scan();
-				foreach (TetheredCamera cam in cameras)
+				cameras = Cli.AutoDetect();
+				foreach (Camera cam in cameras)
 				{
-					cameraList.Items.Add($"{cam.Name} (Port: {cam.USBPort})");
+					cameraList.Items.Add($"{cam.model} (Port: {cam.port})");
 				}
 
 				connBtn.Enabled  = false;
@@ -77,21 +77,21 @@ namespace AstroShutter
         private void refreshBtn_mouseUp(object sender, MouseEventArgs e)
         {
 				cameraList.Items.Clear();
-				cameras = TetheredCamera.Scan();
-				foreach (TetheredCamera cam in cameras)
+				cameras = Cli.AutoDetect();
+				foreach (Camera cam in cameras)
 				{
-					cameraList.Items.Add($"{cam.Name} (Port: {cam.USBPort})");
+					cameraList.Items.Add($"{cam.model} (Port: {cam.port})");
 				}
         }
 
         private void cameraList_selectedIndexChanged(object sender, EventArgs e)
         {			
-			cameras = TetheredCamera.Scan();
+			cameras = Cli.AutoDetect();
             if (cameraList.SelectedIndex != -1 && cameras.Count >= cameraList.SelectedIndex)
 			{
 				selectedCamera = cameraList.SelectedIndex;
 				connBtn.Enabled  = true;
-				Console.WriteLine(cameras[selectedCamera].Name);
+				Console.WriteLine(cameras[selectedCamera].model + " at " + cameras[selectedCamera].port);
 			}
 			else if (cameraList.SelectedIndex != -1)
 				connBtn.Enabled  = false;
@@ -111,12 +111,12 @@ namespace AstroShutter
 
         private void cameraList_mouseDoubleClick(object sender, MouseEventArgs e)
         {
-			List<TetheredCamera> cameras = TetheredCamera.Scan();
+			List<Camera> cameras = Cli.AutoDetect();
             if (cameraList.SelectedIndex != -1 && cameras.Count >= cameraList.SelectedIndex)
 			{
 				selectedCamera = cameraList.SelectedIndex;
 				connBtn.Enabled  = true;
-				Console.WriteLine(cameras[selectedCamera].Name);
+				Console.WriteLine(cameras[selectedCamera].model);
 
 				cameraWatch.Stop();
 				this.Close();

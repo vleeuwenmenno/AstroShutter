@@ -2,15 +2,14 @@
 <Form
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	Title="AstroShutter - [New plan]"
+	Title="AstroShutter - [New project]"
 	ClientSize="800, 480"
 	Padding="10">
     <Form.Menu>
         <MenuBar>
             <ButtonMenuItem Text="F&amp;ile">
-                <ButtonMenuItem Text="New" Shortcut="{On Control+N, Mac=Application+N}" />
-                <ButtonMenuItem Text="Open" Shortcut="{On Control+O, Mac=Application+O}" />
-                <ButtonMenuItem Text="Discard" Shortcut="{On Control+Shift+C, Mac=Application+Shift+C}" />
+                <ButtonMenuItem Text="New project" Shortcut="{On Control+N, Mac=Application+N}" />
+                <ButtonMenuItem Text="Open project" Shortcut="{On Control+O, Mac=Application+O}" />
                 <SeparatorMenuItem></SeparatorMenuItem>
                 <ButtonMenuItem Text="Save" Shortcut="{On Control+S, Mac=Application+S}" />
                 <ButtonMenuItem Text="Save As" Shortcut="{On Control+Shift+S, Mac=Application+Shift+S}" />

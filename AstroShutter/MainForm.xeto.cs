@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using Eto.Forms;
 using Eto.Drawing;
 using Eto.Serialization.Xaml;
-using SharpCamera;
 using System.Timers;
 using System.ComponentModel;
+using AstroShutter.CliWrapper;
 
 namespace AstroShutter
 {	
 	public class MainForm : Form
 	{	
-		private TetheredCamera camera;
+		private Camera camera;
 		private Label statusBox;
 		private TextBox connectionStatusBox;
 
@@ -66,7 +66,6 @@ namespace AstroShutter
         private void form_OnClosing(object sender, CancelEventArgs e)
         {
             cameraWatch.Stop();
-			camera.Exit();
 
 			if (camera.Connected)
 			{
@@ -77,16 +76,19 @@ namespace AstroShutter
 
         protected void HandleQuit(object sender, EventArgs e)
 		{
-			if (camera != null && camera.Connected)
-				camera.Exit();
-
 			Environment.Exit(0);
 		}
 		
 		private void disconnectBtn_Click(object sender, EventArgs e)
 		{
-			camera.Exit();
-			cameraWatch_elapsed(null, null);
+			statusBox.Text = $"Camera disconnected!";
+			connectionStatusBox.Text = $"Disconnected";
+
+			connectBtn.Enabled = true;
+			disconnectBtn.Enabled = false;
+			cameraWatch.Stop();
+
+			camera = null;
 		}
 
 		private async void connectBtn_Click(object sender, EventArgs e)
@@ -96,17 +98,16 @@ namespace AstroShutter
 			
 			try
 			{
-				camera = TetheredCamera.Scan()[cf.selectedCamera];
-				camera.Connect();
+				camera = Cli.AutoDetect()[cf.selectedCamera];
 
 				if (camera.Connected)
 				{
-					statusBox.Text = $"Connection established to {camera.Name}";
+					statusBox.Text = $"Connection established to {camera.model}";
 					connectionStatusBox.Text = $"Connected";
 
 					cameraWatch = new Timer();
 
-					cameraWatch.Interval = 1000;
+					cameraWatch.Interval = 2000;
 					cameraWatch.Elapsed += new ElapsedEventHandler(cameraWatch_elapsed);
 
 					cameraWatch.Start();
