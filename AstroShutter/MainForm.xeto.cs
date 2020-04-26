@@ -5,6 +5,7 @@ using Eto.Drawing;
 using Eto.Serialization.Xaml;
 using SharpCamera;
 using System.Timers;
+using System.ComponentModel;
 
 namespace AstroShutter
 {	
@@ -18,9 +19,13 @@ namespace AstroShutter
 
 		ButtonMenuItem disconnectBtn;
 
+		Timer cameraWatch;
+
 		public MainForm()
 		{
 			XamlReader.Load(this);
+
+			this.Closing += new EventHandler<CancelEventArgs>(form_OnClosing);
 
 			ImageView imageView = new ImageView ();
 
@@ -58,7 +63,19 @@ namespace AstroShutter
 			this.Content = layout;
 		}
 
-		protected void HandleQuit(object sender, EventArgs e)
+        private void form_OnClosing(object sender, CancelEventArgs e)
+        {
+            cameraWatch.Stop();
+			camera.Exit();
+
+			if (camera.Connected)
+			{
+				MessageBox.Show("Please disconnect the camera before closing.");
+				e.Cancel = true;
+			}
+        }
+
+        protected void HandleQuit(object sender, EventArgs e)
 		{
 			if (camera != null && camera.Connected)
 				camera.Exit();
@@ -87,12 +104,12 @@ namespace AstroShutter
 					statusBox.Text = $"Connection established to {camera.Name}";
 					connectionStatusBox.Text = $"Connected";
 
-					Timer t = new Timer();
+					cameraWatch = new Timer();
 
-					t.Interval = 1000;
-					t.Elapsed += new ElapsedEventHandler(cameraWatch_elapsed);
+					cameraWatch.Interval = 1000;
+					cameraWatch.Elapsed += new ElapsedEventHandler(cameraWatch_elapsed);
 
-					t.Start();
+					cameraWatch.Start();
 
 					connectBtn.Enabled = false;
 					disconnectBtn.Enabled = true;
@@ -115,6 +132,7 @@ namespace AstroShutter
 
 				connectBtn.Enabled = true;
 				disconnectBtn.Enabled = false;
+				cameraWatch.Stop();
 			}
         }
     }

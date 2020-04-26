@@ -15,6 +15,7 @@ namespace AstroShutter
 		public int selectedCamera = 0;
 
 		List<TetheredCamera> cameras;
+		Timer cameraWatch;
 
 		public ConnectForm()
 		{
@@ -50,12 +51,12 @@ namespace AstroShutter
 
 			this.Content = layout;
 
-			Timer t = new Timer();
+			cameraWatch = new Timer();
 
-			t.Interval = 1000;
-			t.Elapsed += new ElapsedEventHandler(cameraWatch_elapsed);
+			cameraWatch.Interval = 1000;
+			cameraWatch.Elapsed += new ElapsedEventHandler(cameraWatch_elapsed);
 
-			t.Start();
+			cameraWatch.Start();
 		}
 
         private void cameraWatch_elapsed(object sender, ElapsedEventArgs e)
@@ -98,11 +99,13 @@ namespace AstroShutter
 
         private void cancelBtn_mouseUp(object sender, MouseEventArgs e)
         {
+			cameraWatch.Stop();
             this.Close();
         }
 
         private void connBtn_mouseUp(object sender, MouseEventArgs e)
         {
+			cameraWatch.Stop();
 			this.Close();
         }
 
@@ -115,6 +118,7 @@ namespace AstroShutter
 				connBtn.Enabled  = true;
 				Console.WriteLine(cameras[selectedCamera].Name);
 
+				cameraWatch.Stop();
 				this.Close();
 			}
 			else
