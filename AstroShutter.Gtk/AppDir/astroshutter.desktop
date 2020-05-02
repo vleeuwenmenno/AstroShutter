@@ -1,0 +1,10 @@
+# Desktop Entry Specification: https://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+[Desktop Entry]
+Type=Application
+Name=AstroShutter
+Comment=Self-contained .NET Core console application that prints Hello World
+Icon=AstroShutter.Gtk
+Exec=AstroShutter.Gtk
+Path=~
+Terminal=false
+Categories=Development;
