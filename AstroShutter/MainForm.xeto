@@ -3,16 +3,16 @@
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	Title="AstroShutter - [New project]"
-	ClientSize="800, 480"
+	ClientSize="1400, 800"
 	Padding="10">
     <Form.Menu>
         <MenuBar>
             <ButtonMenuItem Text="F&amp;ile">
-                <ButtonMenuItem Text="New project" Shortcut="{On Control+N, Mac=Application+N}" />
-                <ButtonMenuItem Text="Open project" Shortcut="{On Control+O, Mac=Application+O}" />
+                <ButtonMenuItem Text="New project" Shortcut="{On Control+N, Mac=Application+N}" Click="newProjectBtn_Click" ID="newProjectBtn" Enabled="False"/>
+                <ButtonMenuItem Text="Open project" Shortcut="{On Control+O, Mac=Application+O}" Click="openProjectBtn_Click" ID="openProjectBtn" Enabled="False" />
                 <SeparatorMenuItem></SeparatorMenuItem>
-                <ButtonMenuItem Text="Save" Shortcut="{On Control+S, Mac=Application+S}" />
-                <ButtonMenuItem Text="Save As" Shortcut="{On Control+Shift+S, Mac=Application+Shift+S}" />
+                <ButtonMenuItem Text="Save" Shortcut="{On Control+S, Mac=Application+S}" Click="saveProjectBtn_Click" ID="saveProjectBtn" Enabled="False" />
+                <ButtonMenuItem Text="Save As" Shortcut="{On Control+Shift+S, Mac=Application+Shift+S}" Click="saveAsProjectBtn_Click" ID="saveAsProjectBtn" Enabled="False" />
                 <SeparatorMenuItem></SeparatorMenuItem>
                 <ButtonMenuItem Text="Exit" Shortcut="{On Control+Q, Mac=Application+Q}" Click="HandleQuit" />
             </ButtonMenuItem>
@@ -23,4 +23,207 @@
             </ButtonMenuItem>
         </MenuBar>
     </Form.Menu>
+    <TableLayout ID="mainTableLayout">
+        <TableRow>
+            <TableCell>
+                <StackLayout Padding="5" Orientation="Horizontal">
+                    <Panel Padding="8,0,8,0">
+                        <Button ID="capturePreviewBtn" Text="Capture Preview" Click="capturePreviewBtn_Click"/>
+                    </Panel>
+                    <Panel Padding="8,0,8,0">
+                        <Button ID="captureSequenceBtn" Text="Capture" Click="captureBtn_Click" />
+                    </Panel>
+                </StackLayout>
+            </TableCell>
+        </TableRow>
+        <TableRow ScaleHeight="True">
+            <TableCell>
+                <Splitter FixedPanel="Panel1" Panel1MinimumSize="1000" Panel2MinimumSize="400" Orientation="Horizontal">
+                    <Splitter.Panel1>
+                        <TableLayout>
+                            <TableRow>
+                                <GroupBox>
+                                    <Label BackgroundColor="CornflowerBlue" TextColor="White" TextAlignment="Center">
+                                        Camera Preview
+                                    </Label>
+                                </GroupBox>
+                            </TableRow>
+                            <TableRow>
+                                <GroupBox>
+                                    <ImageView ID="cameraPreviewImg"/>
+                                </GroupBox>
+                            </TableRow>
+                        </TableLayout>
+                    </Splitter.Panel1>
+                    <Splitter.Panel2>
+                        <Splitter FixedPanel="Panel1" Orientation="Vertical">
+                            <Splitter.Panel1>
+                                <TableLayout>
+                                    <TableRow>
+                                        <TableCell>
+                                            <GroupBox>
+                                                <Label BackgroundColor="CornflowerBlue" TextColor="White" TextAlignment="Center">
+                                                    Camera settings
+                                                </Label>
+                                            </GroupBox>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <GroupBox Padding="8">
+                                            <DynamicLayout Spacing="8,8">
+                                            
+                                                <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="Capture Target:" />
+                                                    </StackLayout>
+                                                    <ComboBox ID="shutterSpeedComboBox" ReadOnly="True"/>
+                                                </DynamicRow>
+
+                                                <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="Bulb time:" />
+                                                    </StackLayout>
+                                                    <TextBox Text="60" ID="bulbTimeTxt" Enabled="False" />
+                                                </DynamicRow>
+                                                
+                                                <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                    <Label Text="ISO:" />
+                                                    </StackLayout>
+                                                    <ComboBox ID="isoComboBox" ReadOnly="True"></ComboBox>
+                                                </DynamicRow>
+                                                
+                                                <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="F-Stop:" />
+                                                    </StackLayout>
+                                                    <ComboBox ID="apertureComboBox" ReadOnly="True"></ComboBox>
+                                                </DynamicRow>
+                                                
+                                                <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="Colour Mode:" />
+                                                    </StackLayout>
+                                                    <ComboBox ID="colorSpaceComboBox" ReadOnly="True"></ComboBox>
+                                                </DynamicRow>
+                                                
+                                                <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="Image Quality:" />
+                                                    </StackLayout>
+                                                    <ComboBox ID="imageFormatComboBox" ReadOnly="True"></ComboBox>
+                                                </DynamicRow>
+                                                
+                                                <!-- <DynamicRow>
+                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="Capture Target:" />
+                                                    </StackLayout>
+                                                    <ComboBox ID="capTargetComboBox" ReadOnly="True"></ComboBox>
+                                                </DynamicRow> -->
+
+                                            </DynamicLayout>
+                                        </GroupBox>
+                                    </TableRow>
+                                </TableLayout>
+                            </Splitter.Panel1>
+                            <Splitter.Panel2>
+                                <TableLayout>
+                                    <TableRow>
+                                        <TableCell>
+                                            <GroupBox>
+                                                <Label BackgroundColor="CornflowerBlue" TextColor="White" TextAlignment="Center">
+                                                    Project settings
+                                                </Label>
+                                            </GroupBox>
+                                        </TableCell>
+                                    </TableRow>
+                                    <TableRow>
+                                        <GroupBox Padding="8">
+                                            <DynamicLayout>
+                                                <DynamicLayout Spacing="8,8">
+                                                
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Subject:" />
+                                                        </StackLayout>
+                                                        <TextBox ID="projectSubjectTxt" Text="" ToolTip="The subject you are making photos of. This is used to download your photos to a specific directory (Example: Messier 13, NGC 6960 or Andromeda)"/>
+                                                    </DynamicRow>
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Download afterwards: " />
+                                                        </StackLayout>
+                                                        <CheckBox ID="downloadAftChk" ToolTip="Download photos after the entire program has finished." />
+                                                    </DynamicRow>
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Download immediately: " />
+                                                        </StackLayout>
+                                                        <CheckBox ID="downloadImChk" ToolTip="Download every photo immediately after it has been taken."/>
+                                                    </DynamicRow>
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Pause between entries: " />
+                                                        </StackLayout>
+                                                        <CheckBox ID="requestUserInputChk" ToolTip="Show a popup between entries to allow installing/removing flat filters or lens caps." Checked="True"/>
+                                                    </DynamicRow>
+
+                                                    <!-- <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Convert after download: " />
+                                                        </StackLayout>
+                                                        <CheckBox ToolTip="When enabled this will use rawtran to convert your RAW images to FITS straight after downloading."/>
+                                                    </DynamicRow> -->
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Directory: " />
+                                                        </StackLayout>
+                                                        <TextBox ID="projectDirectoryTxt" Text="" ReadOnly="True" ToolTip="The directory to save your photos to. (Double click to browse)"/>
+                                                    </DynamicRow>
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Project schedule: " />
+                                                        </StackLayout>
+                                                        <Button ID="projectAddEntryBtn" Text="Add" />
+                                                    </DynamicRow>
+                                                </DynamicLayout>
+                                            </DynamicLayout>
+                                        </GroupBox>
+                                    </TableRow>
+                                    <TableRow>
+                                        <GroupBox Padding="8">
+                                            <DynamicLayout>
+                                                <DynamicRow>
+                                                    <ListBox Size="96,32" ID="projectListBoxExp"></ListBox>
+                                                    <ListBox ID="projectListBoxShut"></ListBox>
+                                                    <ListBox ID="projectListBoxDur"></ListBox>
+                                                    <ListBox ID="projectListBoxIso"></ListBox>
+                                                </DynamicRow>
+                                            </DynamicLayout>
+                                        </GroupBox>
+                                    </TableRow>
+                                </TableLayout>
+                            </Splitter.Panel2>
+                        </Splitter>
+                    </Splitter.Panel2>
+                </Splitter>
+            </TableCell>
+        </TableRow>
+        <TableRow>
+            <TableCell>
+                <StackLayout Padding="0,5,0,0" Orientation="Horizontal">
+                    <GroupBox Padding="8">
+                        <Label ID="lblConnectionStatus" Text="Nothing connected" />
+                    </GroupBox>
+                    <GroupBox Padding="8">
+                        <Label ID="lblBusyMessage" Text="Connect to a camera to begin..." />
+                    </GroupBox>
+                </StackLayout>
+            </TableCell>
+        </TableRow>
+    </TableLayout>
 </Form>

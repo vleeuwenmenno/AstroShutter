@@ -21,7 +21,7 @@ namespace AstroShutter
 		{
 			this.Title = "Select your camera";
 			cameraList = new ListBox();
-			cameraList.Width = 300;
+			cameraList.Width = 400;
 			cameraList.Height = 300;
 			
 			cameraList.SelectedIndexChanged += new EventHandler<EventArgs>(cameraList_selectedIndexChanged);
@@ -29,7 +29,7 @@ namespace AstroShutter
 
 			foreach (Camera cam in Cli.AutoDetect())
 			{
-				cameraList.Items.Add($"{cam.model} (Port: {cam.port})");
+				cameraList.Items.Add($"{cam.model} (Port: {cam.port})" + (cam.isLocked ? " (In use)": ""));
 			}
 
 			connBtn = new Button { Text = "Connect", Enabled = false };
@@ -63,12 +63,7 @@ namespace AstroShutter
         {
             if (cameras.Count != Cli.AutoDetect().Count)
 			{
-				cameraList.Items.Clear();
-				cameras = Cli.AutoDetect();
-				foreach (Camera cam in cameras)
-				{
-					cameraList.Items.Add($"{cam.model} (Port: {cam.port})");
-				}
+				RefreshList();
 
 				connBtn.Enabled  = false;
 			}
@@ -76,25 +71,33 @@ namespace AstroShutter
 
         private void refreshBtn_mouseUp(object sender, MouseEventArgs e)
         {
-				cameraList.Items.Clear();
-				cameras = Cli.AutoDetect();
-				foreach (Camera cam in cameras)
-				{
-					cameraList.Items.Add($"{cam.model} (Port: {cam.port})");
-				}
+			RefreshList();
+        }
+
+        private void RefreshList()
+        {
+			connBtn.Enabled  = false;
+
+            cameraList.Items.Clear();
+			cameras = Cli.AutoDetect();
+			foreach (Camera cam in cameras)
+			{
+				cameraList.Items.Add($"{cam.model} (Port: {cam.port})" + (cam.isLocked ? " (In use)": ""));
+			}
         }
 
         private void cameraList_selectedIndexChanged(object sender, EventArgs e)
         {			
-			cameras = Cli.AutoDetect();
-            if (cameraList.SelectedIndex != -1 && cameras.Count >= cameraList.SelectedIndex)
-			{
-				selectedCamera = cameraList.SelectedIndex;
-				connBtn.Enabled  = true;
-				Console.WriteLine(cameras[selectedCamera].model + " at " + cameras[selectedCamera].port);
-			}
-			else if (cameraList.SelectedIndex != -1)
-				connBtn.Enabled  = false;
+			new System.Threading.Thread(() => {
+				cameras = Cli.AutoDetect();
+				if (cameraList.SelectedIndex != -1 && cameras.Count >= cameraList.SelectedIndex && !cameras[selectedCamera].isLocked)
+				{
+					selectedCamera = cameraList.SelectedIndex;
+					connBtn.Enabled  = true;
+				}
+				else if (cameraList.SelectedIndex != -1)
+					connBtn.Enabled  = false;
+			}).Start();
         }
 
         private void cancelBtn_mouseUp(object sender, MouseEventArgs e)
