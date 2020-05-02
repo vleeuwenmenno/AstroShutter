@@ -3,7 +3,7 @@
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	Title="AstroShutter - [New project]"
-	ClientSize="1400, 800"
+	ClientSize="1400, 928"
 	Padding="10">
     <Form.Menu>
         <MenuBar>
@@ -40,20 +40,41 @@
             <TableCell>
                 <Splitter FixedPanel="Panel1" Panel1MinimumSize="1000" Panel2MinimumSize="400" Orientation="Horizontal">
                     <Splitter.Panel1>
-                        <TableLayout>
-                            <TableRow>
-                                <GroupBox>
-                                    <Label BackgroundColor="CornflowerBlue" TextColor="White" TextAlignment="Center">
-                                        Camera Preview
-                                    </Label>
-                                </GroupBox>
-                            </TableRow>
-                            <TableRow>
-                                <GroupBox>
-                                    <ImageView ID="cameraPreviewImg"/>
-                                </GroupBox>
-                            </TableRow>
-                        </TableLayout>
+                        <Splitter FixedPanel="Panel1" Panel1MinimumSize="680" Panel2MinimumSize="150" Orientation="Vertical">
+                            <Splitter.Panel1>
+                                <TableLayout>
+                                    <TableRow>
+                                        <GroupBox>
+                                            <Label BackgroundColor="CornflowerBlue" TextColor="White" TextAlignment="Center">
+                                                Camera Preview
+                                            </Label>
+                                        </GroupBox>
+                                    </TableRow>
+                                    <TableRow>
+                                        <GroupBox>
+                                            <ImageView ID="cameraPreviewImg"/>
+                                        </GroupBox>
+                                    </TableRow>
+                                </TableLayout>
+                            </Splitter.Panel1>
+                            <Splitter.Panel2>
+                                <TableLayout>
+                                    <TableRow>
+                                        <GroupBox Padding="8" Text="Project schedule: ">
+                                            <DynamicLayout>
+                                                <DynamicRow>
+                                                    <ListBox Size="96,32" ID="projectListBoxExp"></ListBox>
+                                                    <ListBox ID="projectListBoxShut"></ListBox>
+                                                    <ListBox ID="projectListBoxDur"></ListBox>
+                                                    <ListBox ID="projectListBoxIso"></ListBox>
+                                                    <ListBox Size="128,32" ID="projectListBoxQuality"></ListBox>
+                                                </DynamicRow>
+                                            </DynamicLayout>
+                                        </GroupBox>
+                                    </TableRow>
+                                </TableLayout>
+                            </Splitter.Panel2>
+                        </Splitter>
                     </Splitter.Panel1>
                     <Splitter.Panel2>
                         <Splitter FixedPanel="Panel1" Orientation="Vertical">
@@ -70,57 +91,84 @@
                                     </TableRow>
                                     <TableRow>
                                         <GroupBox Padding="8">
-                                            <DynamicLayout Spacing="8,8">
-                                            
-                                                <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                        <Label Text="Capture Target:" />
-                                                    </StackLayout>
-                                                    <ComboBox ID="shutterSpeedComboBox" ReadOnly="True"/>
-                                                </DynamicRow>
+                                            <DynamicLayout>
+                                                <DynamicLayout Spacing="8,8">
+                                                
 
-                                                <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                        <Label Text="Bulb time:" />
-                                                    </StackLayout>
-                                                    <TextBox Text="60" ID="bulbTimeTxt" Enabled="False" />
-                                                </DynamicRow>
-                                                
-                                                <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                    <Label Text="ISO:" />
-                                                    </StackLayout>
-                                                    <ComboBox ID="isoComboBox" ReadOnly="True"></ComboBox>
-                                                </DynamicRow>
-                                                
-                                                <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                        <Label Text="F-Stop:" />
-                                                    </StackLayout>
-                                                    <ComboBox ID="apertureComboBox" ReadOnly="True"></ComboBox>
-                                                </DynamicRow>
-                                                
-                                                <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                        <Label Text="Colour Mode:" />
-                                                    </StackLayout>
-                                                    <ComboBox ID="colorSpaceComboBox" ReadOnly="True"></ComboBox>
-                                                </DynamicRow>
-                                                
-                                                <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                        <Label Text="Image Quality:" />
-                                                    </StackLayout>
-                                                    <ComboBox ID="imageFormatComboBox" ReadOnly="True"></ComboBox>
-                                                </DynamicRow>
-                                                
-                                                <!-- <DynamicRow>
-                                                    <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                        <Label Text="Capture Target:" />
-                                                    </StackLayout>
-                                                    <ComboBox ID="capTargetComboBox" ReadOnly="True"></ComboBox>
-                                                </DynamicRow> -->
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Exposures:" />
+                                                        </StackLayout>
+                                                        <TextBox ID="exposuresTxt" ToolTip="The amount of exposures that will be taken when executing this schedule entry." />
+                                                    </DynamicRow>
+                                                    
 
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Image Type:" />
+                                                        </StackLayout>
+                                                        <TextBox ID="imageTypeTxt" Text="light" PlaceholderText="light, dark, bias or flat" ToolTip="Image type is used to make directories when downloading images to split dark files and light files from each other, but it is not limited to this feel free to use your preferred term here."/>
+                                                    </DynamicRow>
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Shutter speed:" />
+                                                        </StackLayout>
+                                                        <ComboBox ID="shutterSpeedComboBox" ReadOnly="True"/>
+                                                    </DynamicRow>
+
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Bulb time:" />
+                                                        </StackLayout>
+                                                        <TextBox Text="60" ID="bulbTimeTxt" Enabled="False" />
+                                                    </DynamicRow>
+                                                    
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                        <Label Text="ISO:" />
+                                                        </StackLayout>
+                                                        <ComboBox ID="isoComboBox" ReadOnly="True" ToolTip="ISO affects image quality. A higher ISO typically translates to a noisy or “grainy” image. The higher the ISO the ligher the image becomes so balance it wisely between noise and light."></ComboBox>
+                                                    </DynamicRow>
+                                                    
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Image Quality:" />
+                                                        </StackLayout>
+                                                        <ComboBox ID="imageFormatComboBox" ReadOnly="True" ToolTip="Image quality dictates in what format and quality your photos are saved."></ComboBox>
+                                                    </DynamicRow>
+                                                    
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="F-Stop:" />
+                                                        </StackLayout>
+                                                        <ComboBox ID="apertureComboBox" ReadOnly="True" ToolTip="Does not interact with project schedules."></ComboBox>
+                                                    </DynamicRow>
+                                                    
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Colour Mode:" />
+                                                        </StackLayout>
+                                                        <ComboBox ID="colorSpaceComboBox" ReadOnly="True" ToolTip="Does not interact with project schedules."></ComboBox>
+                                                    </DynamicRow>
+                                                    
+                                                    <DynamicRow>
+                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                            <Label Text="Capture Target:" />
+                                                        </StackLayout>
+                                                        <ComboBox ID="capTargetComboBox" ReadOnly="True" ToolTip="Set this to SD Card/Internal Memory else currently this program cannot download your images. (Does not interact with Preview images)"></ComboBox>
+                                                    </DynamicRow>
+
+                                                </DynamicLayout>
+                                                <Panel Padding="0,8,0,8">
+                                                    <Button ID="projectAddEntryBtn" Text="Add schedule entry" ToolTip="Add current settings to the project as schedule entry." />
+                                                </Panel>
+                                                <Panel Padding="0,8,0,8">
+                                                    <Button ID="projectUpdateEntryBtn" Text="Update selected entry" Enabled="False" ToolTip="Update selected schedule entry settings." />
+                                                </Panel>
+                                                <Panel Padding="0,8,0,8">
+                                                    <Button ID="projectDelEntryBtn" Text="Remove selected entry" Enabled="False" ToolTip="Removes selected schedule entry settings." />
+                                                </Panel>
                                             </DynamicLayout>
                                         </GroupBox>
                                     </TableRow>
@@ -183,26 +231,7 @@
                                                         </StackLayout>
                                                         <TextBox ID="projectDirectoryTxt" Text="" ReadOnly="True" ToolTip="The directory to save your photos to. (Double click to browse)"/>
                                                     </DynamicRow>
-
-                                                    <DynamicRow>
-                                                        <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                            <Label Text="Project schedule: " />
-                                                        </StackLayout>
-                                                        <Button ID="projectAddEntryBtn" Text="Add" />
-                                                    </DynamicRow>
                                                 </DynamicLayout>
-                                            </DynamicLayout>
-                                        </GroupBox>
-                                    </TableRow>
-                                    <TableRow>
-                                        <GroupBox Padding="8">
-                                            <DynamicLayout>
-                                                <DynamicRow>
-                                                    <ListBox Size="96,32" ID="projectListBoxExp"></ListBox>
-                                                    <ListBox ID="projectListBoxShut"></ListBox>
-                                                    <ListBox ID="projectListBoxDur"></ListBox>
-                                                    <ListBox ID="projectListBoxIso"></ListBox>
-                                                </DynamicRow>
                                             </DynamicLayout>
                                         </GroupBox>
                                     </TableRow>

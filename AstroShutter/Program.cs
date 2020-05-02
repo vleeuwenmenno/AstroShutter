@@ -33,13 +33,21 @@ namespace AstroShutter
         public int exposures {get; set;}
         public string shutter {get; set;}
         public string duration {get; set;}
+        public bool isBulb {get; set;}
         public string iso {get; set;}
+        public string imageQuality {get; set;}
 
-        public ProgramEntry(int exposures, string shutter, string duration, string iso)
+        public ProgramEntry()
+        {
+            
+        }
+
+        public ProgramEntry(int exposures, string shutter,bool isBulb, string duration, string iso)
         {
             this.exposures = exposures;
             this.shutter = shutter;
             this.duration = duration;
+            this.isBulb = isBulb;
             this.iso = iso;
         }
     }
