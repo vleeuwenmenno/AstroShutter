@@ -18,6 +18,8 @@
             </ButtonMenuItem>
 
 			<ButtonMenuItem Text="Camera">
+                <ButtonMenuItem Text="Capture Preview" x:Name="capturePreviewMenuBtn" Enabled="false" Shortcut="{On Control+P, Mac=Application+P}" Click="capturePreviewBtn_Click" />
+                <SeparatorMenuItem></SeparatorMenuItem>
                 <ButtonMenuItem Text="Connect" x:Name="connectBtn" Shortcut="{On Control+Shift+C, Mac=Application+Shift+N}" Click="connectBtn_Click" />
                 <ButtonMenuItem Text="Disconnect" x:Name="disconnectBtn" Enabled="false" Shortcut="{On Control+Shift+D, Mac=Application+Shift+N}" Click="disconnectBtn_Click" />
             </ButtonMenuItem>

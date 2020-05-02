@@ -37,6 +37,7 @@ namespace AstroShutter
 
 		private readonly ButtonMenuItem connectBtn;
 		private readonly ButtonMenuItem disconnectBtn;
+		private readonly ButtonMenuItem capturePreviewMenuBtn;
 
 		private readonly Label lblBusyMessage;
 		private readonly Label lblConnectionStatus;
@@ -481,6 +482,7 @@ namespace AstroShutter
 
 			connectBtn.Enabled = true;
 			disconnectBtn.Enabled = false;
+			capturePreviewMenuBtn.Enabled = false;
 			cameraWatch.Stop();
 
 			camera = null;
@@ -505,6 +507,7 @@ namespace AstroShutter
 					cameraWatch.Elapsed += new ElapsedEventHandler(cameraWatch_elapsed);
 
 					connectBtn.Enabled = false;
+					capturePreviewMenuBtn.Enabled = true;
 					disconnectBtn.Enabled = true;
 
 					PopulateControls();
@@ -594,6 +597,7 @@ namespace AstroShutter
 						mainTableLayout.Enabled = false;
 						connectBtn.Enabled = true;
 						disconnectBtn.Enabled = false;
+						capturePreviewMenuBtn.Enabled = false;
 						cameraWatch.Stop();
 					});
 				}
