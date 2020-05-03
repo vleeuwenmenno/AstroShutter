@@ -2,8 +2,8 @@
 [Desktop Entry]
 Type=Application
 Name=AstroShutter
-Comment=Self-contained .NET Core console application that prints Hello World
-Icon=icon
+Comment=AstroShutter is a Eto.Forms based ui that uses gphoto2_cl_bindings to control your camera for astrophotography
+Icon=AstroShutter
 Exec=AstroShutter.Gtk
 Path=~
 Terminal=false

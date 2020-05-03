@@ -245,16 +245,16 @@ namespace AstroShutter
             if (projectChanged())
 			{
 				if (projectJsonPath == "")
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [New Project]*");
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter v0.0.3 - [New Project]*");
 				else
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]*");
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]*");
 			}
 			else
 			{
 				if (projectJsonPath == "")
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [New Project]");
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter v0.0.3 - [New Project]");
 				else
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]");
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]");
 			}
         }
 
@@ -358,7 +358,7 @@ namespace AstroShutter
 					program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
 					program.renamePhotos = (bool)renamePhotosChk.Checked;
 
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]");
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]");
 					Application.Instance.Invoke(() => lblBusyMessage.Text = msg + " and saved state to project file");
 
 					program.Save(projectJsonPath);
@@ -431,7 +431,7 @@ namespace AstroShutter
 
 			Application.Instance.Invoke(() => 
 			{
-				this.Title = $"AstroShutter - [{projectJsonPath}]";
+				this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]";
 
 				lblBusyMessage.Text = "Program completed!";
 
@@ -630,7 +630,7 @@ namespace AstroShutter
 			cameraSettingsTable.Visible = true;
 			captureInfoTable.Visible = false;
 
-			this.Title = $"AstroShutter - [New Project]";
+			this.Title = $"AstroShutter v0.0.3 - [New Project]";
 			lblBusyMessage.Text = "Created new project";
 
 			ResetEntries();
@@ -956,7 +956,7 @@ namespace AstroShutter
 				program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
 				program.renamePhotos = (bool)renamePhotosChk.Checked;
 
-				this.Title = $"AstroShutter - [{projectJsonPath}]";
+				this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]";
 
 				program.Save(projectJsonPath);
 				lblBusyMessage.Text = $"Saved project to {projectJsonPath}";
@@ -1016,7 +1016,7 @@ namespace AstroShutter
 				makeImageTypeDirChk.Checked = program.makeImageTypeDir;
 				renamePhotosChk.Checked = program.renamePhotos;
 
-				this.Title = $"AstroShutter - [{projectJsonPath}]";
+				this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]";
 
 				lblBusyMessage.Text = $"Loaded project from {projectJsonPath}";
 

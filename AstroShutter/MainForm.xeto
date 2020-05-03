@@ -2,7 +2,7 @@
 <Form
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	Title="AstroShutter - [New project]"
+	Title="AstroShutter v0.0.3 - [New project]"
 	ClientSize="1400, 1000"
 	Padding="10">
     <Form.Menu>
