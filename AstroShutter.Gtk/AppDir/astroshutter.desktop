@@ -3,7 +3,7 @@
 Type=Application
 Name=AstroShutter
 Comment=Self-contained .NET Core console application that prints Hello World
-Icon=AstroShutter.Gtk
+Icon=icon
 Exec=AstroShutter.Gtk
 Path=~
 Terminal=false
