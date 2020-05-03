@@ -2,7 +2,6 @@ using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System;
-using AstroShutter.CliWrapper;
 
 namespace AstroShutter
 {
@@ -13,6 +12,8 @@ namespace AstroShutter
         public bool createSubDir {get;set;}
         public bool downloadIm {get;set;}
         public bool downloadAft {get;set;}
+        public bool renamePhotos {get;set;}
+        public bool makeImageTypeDir {get;set;}
         public bool requestUserInput {get; set;}
         public string saveDirectory {get;set;}
         public List<ProgramEntry> entries;

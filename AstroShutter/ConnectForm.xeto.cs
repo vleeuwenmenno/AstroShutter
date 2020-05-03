@@ -4,7 +4,7 @@ using Eto.Forms;
 using Eto.Drawing;
 using Eto.Serialization.Xaml;
 using System.Timers;
-using AstroShutter.CliWrapper;
+using gphoto2_cl_binding;
 
 namespace AstroShutter
 {	

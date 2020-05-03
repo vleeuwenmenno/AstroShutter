@@ -33,7 +33,7 @@
                         <Button ID="capturePreviewBtn" Text="Capture Preview" Click="capturePreviewBtn_Click"/>
                     </Panel>
                     <Panel Padding="8,0,8,0">
-                        <Button ID="captureSequenceBtn" Text="Capture" Click="captureBtn_Click" />
+                        <Button ID="captureSequenceBtn" Text="Capture" Click="captureSequenceBtn_Click" />
                     </Panel>
                 </StackLayout>
             </TableCell>
@@ -132,7 +132,7 @@
                                                                 <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
                                                                     <Label Text="Image Type:" />
                                                                 </StackLayout>
-                                                                <TextBox ID="imageTypeTxt" Text="light" PlaceholderText="light, dark, bias or flat" ToolTip="Image type is used to make directories when downloading images to split dark files and light files from each other, but it is not limited to this feel free to use your preferred term here."/>
+                                                                <TextBox ID="imageTypeTxt" Text="LIGHT" PlaceholderText="LIGHT, DARK, BIAS or FLAT" ToolTip="Image type is used to make directories when downloading images to split dark files and light files from each other, but it is not limited to this feel free to use your preferred term here."/>
                                                             </DynamicRow>
 
                                                             <DynamicRow>
@@ -239,14 +239,28 @@
 
                                                         <DynamicRow>
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                                <Label Text="Create directory for project: " />
+                                                                <Label Text="Rename photos: " />
+                                                            </StackLayout>
+                                                            <CheckBox ID="renamePhotosChk" ToolTip="Rename downloaded photos to include their image type in the name. (Example LIGHT_IMG_1591.CR2, DARK_IMG_1591.CR2 or ANYTHING_IMG_1591.CR2)"/>
+                                                        </DynamicRow>
+
+                                                        <DynamicRow>
+                                                            <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                                <Label Text="Folders with image type: " />
+                                                            </StackLayout>
+                                                            <CheckBox ID="makeImageTypeDirChk" ToolTip="Move downloaded photos to a folder based on their image type. (Example LIGHT/PHOTO.CR2 or DARK/PHOTO.CR2)"/>
+                                                        </DynamicRow>
+
+                                                        <DynamicRow>
+                                                            <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                                <Label Text="Create project directory: " />
                                                             </StackLayout>
                                                             <CheckBox ID="createDirChk" ToolTip="Creates a directory to download your photos to, the directory will be named after the subject."/>
                                                         </DynamicRow>
 
                                                         <DynamicRow>
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                                <Label Text="Create dated sub-directory for project: " />
+                                                                <Label Text="Create dated sub-directories: " />
                                                             </StackLayout>
                                                             <CheckBox ID="createSubDirChk" ToolTip="Creates a sub-directory with the current date to download your photos to."/>
                                                         </DynamicRow>

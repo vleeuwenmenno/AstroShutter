@@ -6,10 +6,10 @@ using Eto.Drawing;
 using Eto.Serialization.Xaml;
 using System.Timers;
 using System.ComponentModel;
-using AstroShutter.CliWrapper;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
+using gphoto2_cl_binding;
 
 namespace AstroShutter
 {	
@@ -84,6 +84,8 @@ namespace AstroShutter
 		private readonly CheckBox requestUserInputChk;
 		private readonly CheckBox createSubDirChk;
 		private readonly CheckBox createDirChk;
+		private readonly CheckBox renamePhotosChk;
+		private readonly CheckBox makeImageTypeDirChk;
 
 		#endregion
 
@@ -143,6 +145,8 @@ namespace AstroShutter
 			requestUserInputChk = FindChild<CheckBox>("requestUserInputChk");
 			createSubDirChk = FindChild<CheckBox>("createSubDirChk");
 			createDirChk = FindChild<CheckBox>("createDirChk");
+			makeImageTypeDirChk = FindChild<CheckBox>("makeImageTypeDirChk");
+			renamePhotosChk = FindChild<CheckBox>("renamePhotosChk");
 
 			#endregion
 
@@ -182,6 +186,9 @@ namespace AstroShutter
 			downloadAftChk.CheckedChanged += new EventHandler<EventArgs>(downloadAftChk_CheckedChanged);
 			downloadImChk.CheckedChanged += new EventHandler<EventArgs>(downloadImChk_CheckedChanged);
 			createSubDirChk.CheckedChanged += new EventHandler<EventArgs>(createSubDirChk_CheckedChanged);
+			createDirChk.CheckedChanged += new EventHandler<EventArgs>(createDirChk_CheckedChanged);
+			renamePhotosChk.CheckedChanged += new EventHandler<EventArgs>(renamePhotosChk_CheckedChanged);
+			makeImageTypeDirChk.CheckedChanged += new EventHandler<EventArgs>(makeImageTypeDirChk_CheckedChanged);
 			
 			#endregion
 
@@ -198,7 +205,7 @@ namespace AstroShutter
 				if (cameraWatch != null && cameraWatch.Enabled == true)
 					cameraWatch.Stop();
 
-				if (camera != null && camera.Connected)
+				if (camera != null && camera.Connected || startAndPauseBtn.Text == "Pause")
 				{
 					MessageBox.Show("Please disconnect the camera before closing.");
 					e.Cancel = true;
@@ -215,7 +222,7 @@ namespace AstroShutter
 				if (cameraWatch != null && cameraWatch.Enabled == true)
 					cameraWatch.Stop();
 
-				if (camera != null && camera.Connected)
+				if (camera != null && camera.Connected || startAndPauseBtn.Text == "Pause")
 				{
 					MessageBox.Show("Please disconnect the camera before closing.");
 					e.Cancel = true;
@@ -231,6 +238,24 @@ namespace AstroShutter
 				return true;
 			else
 				return projectJsonPath != "" ? ComputeSha256Hash(program.JsonString()) != ComputeSha256Hash(File.ReadAllText(projectJsonPath)) : false;
+        }
+
+        private void ValidateTitle()
+        {
+            if (projectChanged())
+			{
+				if (projectJsonPath == "")
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [New Project]*");
+				else
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]*");
+			}
+			else
+			{
+				if (projectJsonPath == "")
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [New Project]");
+				else
+					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]");
+			}
         }
 
 		string ComputeSha256Hash(string rawData)  
@@ -257,6 +282,16 @@ namespace AstroShutter
 			program.sequenceStarted = true;
 			program.sequenceStartedAt = DateTime.Now;
 
+			string saveFilePath = program.saveDirectory;
+			if (program.createDir)
+				saveFilePath += $"/{program.subject}";
+
+			if (program.createSubDir)
+				saveFilePath += $"/{DateTime.Now.ToString("yyyy-MM-dd")}";
+
+			if (!Directory.Exists(saveFilePath))
+				Directory.CreateDirectory(saveFilePath);
+
 			foreach (ProgramEntry entry in program.entries)
 			{					
 				if (entry.exposuresDone == null)
@@ -271,11 +306,14 @@ namespace AstroShutter
 
 				while (entry.exposuresDone.Count < entry.exposures)
 				{
+					List<string> files;
 					int.TryParse(entry.duration, out int bulb);
 					string msg = "";
+					Application.Instance.Invoke(() => lblBusyMessage.Text = $"Capturing next frame (ISO {entry.iso}, {entry.duration}s in {entry.imageQuality}) ...");
+
 					if (entry.isBulb)
 					{
-						List<string> files = camera.captureImage(bulb);
+						files = camera.captureImage(bulb);
 						if (files.Count > 0)
 						{
 							entry.exposuresDone.Add(files);							
@@ -293,7 +331,7 @@ namespace AstroShutter
 					}
 					else
 					{
-						List<string> files = camera.captureImage();
+						files = camera.captureImage();
 						if (files.Count > 0)
 						{
 							entry.exposuresDone.Add(files);							
@@ -317,24 +355,29 @@ namespace AstroShutter
 					program.requestUserInput = (bool)requestUserInputChk.Checked;
 					program.createDir = (bool)createDirChk.Checked;
 					program.createSubDir = (bool)createSubDirChk.Checked;
+					program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
+					program.renamePhotos = (bool)renamePhotosChk.Checked;
 
 					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]");
 					Application.Instance.Invoke(() => lblBusyMessage.Text = msg + " and saved state to project file");
 
 					program.Save(projectJsonPath);
 					
-					Thread.Sleep(1000);
+					Thread.Sleep(500);
 					if (program.downloadIm)
 					{
-						///TODO: Download listed files!
+						foreach (string filePath in files)
+						{
+							if (program.makeImageTypeDir && !Directory.Exists($"{saveFilePath}/{entry.shutter.ToUpper()}"))
+								Directory.CreateDirectory($"{saveFilePath}/{entry.shutter.ToUpper()}");
+							
+							string fileLocation = $"{saveFilePath}/" + (program.makeImageTypeDir ? $"{entry.shutter.ToUpper()}/" : "") + (program.renamePhotos ? entry.shutter.ToUpper() + "_" : "") + $"{Path.GetFileName(filePath)}";
+							
+							camera.DownloadFile(fileLocation, filePath);
+							Application.Instance.Invoke(() => lblBusyMessage.Text = $"Downloading {Path.GetFileName(filePath)} to ${fileLocation} ...");
+						}
 					}
-
-					Application.Instance.Invoke(() => 
-					{
-						startAndPauseBtn.Enabled = false;
-						startAndPauseBtn.Text = "Done";
-						abortBtn.Text = "Reset";
-					});
+					Thread.Sleep(500);
 
 					if (shouldBreak)
 						break;
@@ -351,6 +394,8 @@ namespace AstroShutter
 			{
 				startAndPauseBtn.Enabled = true;
 				shouldBreak = false;
+				abortBtn.Enabled = true;
+				disconnectBtn.Enabled = true;
 
 				if (shouldAbort)
 				{					
@@ -367,7 +412,7 @@ namespace AstroShutter
 
 			if (program.downloadAft)
 			{
-				///TODO: Download all listed files!
+				///TODO: Download all listed files to saveFilePath
 			}
 
 			program.sequenceFinished = true;
@@ -381,6 +426,8 @@ namespace AstroShutter
 			program.requestUserInput = (bool)requestUserInputChk.Checked;
 			program.createDir = (bool)createDirChk.Checked;
 			program.createSubDir = (bool)createSubDirChk.Checked;
+			program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
+			program.renamePhotos = (bool)renamePhotosChk.Checked;
 
 			Application.Instance.Invoke(() => 
 			{
@@ -399,6 +446,25 @@ namespace AstroShutter
 		
 		#region ControlChanged Events
 
+        private void makeImageTypeDirChk_CheckedChanged(object sender, EventArgs e)
+		{
+			program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
+			ValidateTitle();
+		}
+
+        private void renamePhotosChk_CheckedChanged(object sender, EventArgs e)
+		{
+			program.renamePhotos = (bool)renamePhotosChk.Checked;
+			ValidateTitle();
+		}
+
+        private void createDirChk_CheckedChanged(object sender, EventArgs e)
+		{
+			program.createDir = (bool)createDirChk.Checked;
+			ValidateTitle();
+		}
+
+
         private void createSubDirChk_CheckedChanged(object sender, EventArgs e)
         {
             if (createSubDirChk.Checked == true)
@@ -408,18 +474,27 @@ namespace AstroShutter
 			}
 			else
 				createDirChk.Enabled = true;
+
+			program.createSubDir = (bool)createSubDirChk.Checked;
+			ValidateTitle();
         }
 
         private void downloadImChk_CheckedChanged(object sender, EventArgs e)
         {
             if (downloadImChk.Checked == true)
 				downloadAftChk.Checked = false;
+			
+			program.downloadIm = (bool)downloadImChk.Checked;
+			ValidateTitle();
         }
 
         private void downloadAftChk_CheckedChanged(object sender, EventArgs e)
         {
             if (downloadAftChk.Checked == true)
 				downloadImChk.Checked = false;
+
+			program.downloadAft = (bool)downloadAftChk.Checked;
+			ValidateTitle();
         }
 
         private void projectListBox_ValueChanged(object sender, EventArgs e)
@@ -465,7 +540,8 @@ namespace AstroShutter
 
         private void apertureComboBox_ValueChanged(object sender, EventArgs e)
         {
-            camera.aperture = double.Parse(apertureComboBox.Text);
+			double.TryParse(apertureComboBox.Text, out double d);
+            camera.aperture = d;
         }
 
         private void isoComboBox_ValueChanged(object sender, EventArgs e)
@@ -490,7 +566,11 @@ namespace AstroShutter
         private void UpdateCaptureStatusText()
         {
             int frames = 0;
+            int totalFrames = 0;
 			int totalTimeSeconds = 0;
+
+			foreach (ProgramEntry pe in program.entries)
+				totalFrames += pe.exposures;
 
 			foreach (ProgramEntry pe in program.entries)
 			{
@@ -529,7 +609,7 @@ namespace AstroShutter
 			else
 				finishTime = (DateTime)finishedAtTime;
 
-			capturingStatusTextArea.Text = $"{Environment.NewLine}Capturing\t\t\t\t:\t{frames} Frames{Environment.NewLine}{Environment.NewLine}Time Taken\t\t\t\t:\t{taken}{Environment.NewLine}Est. Time Remaining\t:\t{remaining}{Environment.NewLine}Finish Time\t\t\t\t:\t{finishTime.ToString("HH:mm:ss")}";
+			capturingStatusTextArea.Text = $"{Environment.NewLine}Capturing\t\t\t\t:\t{totalFrames} Frames{Environment.NewLine}Progress\t\t\t\t:\t{totalFrames-frames} Frames captured{Environment.NewLine}{Environment.NewLine}Time Taken\t\t\t\t:\t{taken}{Environment.NewLine}{Environment.NewLine}Est. time remaining\t\t:\t{remaining}{Environment.NewLine}Finish Time\t\t\t\t:\t{finishTime.ToString("HH:mm:ss")}";
         }
 
 		private void ResetProgram()
@@ -560,6 +640,8 @@ namespace AstroShutter
 		{
 			Application.Instance.Invoke(() => 
 			{
+				capturePreviewBtn.Enabled = true;
+				captureSequenceBtn.Enabled = true;
 				startAndPauseBtn.Enabled = true;
 				abortBtn.Enabled = false;
 
@@ -575,6 +657,7 @@ namespace AstroShutter
 				
 				lblBusyMessage.Text = "All entries have been reset!";
 
+				startAndPauseBtn.Text = "Start";
 				abortBtn.Text = "Abort";
 				UpdateProgramEntries();
 			});
@@ -613,7 +696,7 @@ namespace AstroShutter
 				// capTargetComboBox.Items.Add(CaptureTarget.InternalRAM.ToString());
 
 				isoComboBox.Text = camera.iso.ToString();
-				apertureComboBox.Text = camera.aperture.ToString();
+				apertureComboBox.Text = camera.aperture == 0d ? "implicit auto" : camera.aperture.ToString();
 				shutterSpeedComboBox.Text = camera.shutterSpeed;
 				colorSpaceComboBox.Text = camera.colorSpace;
 				// capTargetComboBox.Text = camera.captureTarget.ToString();
@@ -705,17 +788,30 @@ namespace AstroShutter
 			}
         }
 
-		private void captureBtn_Click(object sender, EventArgs e)
+		private void captureSequenceBtn_Click(object sender, EventArgs e)
 		{
 			if (program.entries.Count == 0)
 				MessageBox.Show("Please add an entry to your project schedule before beginning capturing.", MessageBoxType.Warning);
 			else
 			{
-				projectSettingsTable.Enabled = false;
-				cameraSettingsTable.Visible = false;
-				captureInfoTable.Visible = true;
+				if (captureSequenceBtn.Text == "Edit program")
+				{
+					projectSettingsTable.Enabled = true;
+					cameraSettingsTable.Visible = true;
+					captureInfoTable.Visible = false;
 
-				UpdateCaptureStatusText();
+					captureSequenceBtn.Text = "Capture";
+				}
+				else
+				{
+					projectSettingsTable.Enabled = false;
+					cameraSettingsTable.Visible = false;
+					captureInfoTable.Visible = true;
+
+					captureSequenceBtn.Text = "Edit program";
+
+					UpdateCaptureStatusText();
+				}
 			}
 		}
 
@@ -807,6 +903,7 @@ namespace AstroShutter
 				startAndPauseBtn.Text = "Resume";
 				shouldBreak = true;
 				startAndPauseBtn.Enabled = false;
+				abortBtn.Enabled = false;
 				lblBusyMessage.Text = "Pausing, please wait while the last capture to completes...";
 				return;
 			}
@@ -817,6 +914,7 @@ namespace AstroShutter
 			capturePreviewBtn.Enabled = false;
 			captureSequenceBtn.Enabled = false;
 			startAndPauseBtn.Text = "Pause";
+			disconnectBtn.Enabled = false;
 
 			new Thread(captureProgram).Start();
 		}
@@ -855,6 +953,8 @@ namespace AstroShutter
 				program.requestUserInput = (bool)requestUserInputChk.Checked;
 				program.createDir = (bool)createDirChk.Checked;
 				program.createSubDir = (bool)createSubDirChk.Checked;
+				program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
+				program.renamePhotos = (bool)renamePhotosChk.Checked;
 
 				this.Title = $"AstroShutter - [{projectJsonPath}]";
 
@@ -913,6 +1013,8 @@ namespace AstroShutter
 				createDirChk.Checked = program.createDir;
 				createSubDirChk.Checked = program.createSubDir;
 				requestUserInputChk.Checked = program.requestUserInput;
+				makeImageTypeDirChk.Checked = program.makeImageTypeDir;
+				renamePhotosChk.Checked = program.renamePhotos;
 
 				this.Title = $"AstroShutter - [{projectJsonPath}]";
 
@@ -926,6 +1028,9 @@ namespace AstroShutter
 					{
 						projectSettingsTable.Enabled = false;
 						cameraSettingsTable.Visible = false;
+						captureSequenceBtn.Enabled = false;
+						captureSequenceBtn.Text = "Edit program";
+						capturePreviewBtn.Enabled = false;
 						captureInfoTable.Visible = true;
 
 						abortBtn.Enabled = true;
@@ -961,6 +1066,9 @@ namespace AstroShutter
 				{
 					shouldBreak = true;
 					shouldAbort = true;
+
+					abortBtn.Enabled = false;
+					startAndPauseBtn.Enabled = false;
 
 					lblBusyMessage.Text = "Aborting, waiting for camera to finish capturing...";
 				}
@@ -1017,20 +1125,7 @@ namespace AstroShutter
 
         private void cameraWatch_elapsed(object sender, ElapsedEventArgs e)
         {
-			if (projectChanged())
-			{
-				if (projectJsonPath == "")
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [New Project]*");
-				else
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]*");
-			}
-			else
-			{
-				if (projectJsonPath == "")
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [New Project]");
-				else
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter - [{projectJsonPath}]");
-			}
+			ValidateTitle();
 
 			if (program.sequenceStarted)
 				Application.Instance.Invoke(() => UpdateProgramEntries());
@@ -1059,7 +1154,7 @@ namespace AstroShutter
 					Application.Instance.Invoke(() => lblConnectionStatus.Text = $"Connection established to {camera.model}");
 			}
         }
-    
-		#endregion
-	}
+
+        #endregion
+    }
 }

@@ -9,8 +9,8 @@
     <PackageReference Include="Eto.Serialization.Xaml" Version="2.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
-
+  
   <ItemGroup>
-    <ProjectReference Include="..\..\AstroShutter-CliWrapper\AstroShutter.CliWrapper\AstroShutter.CliWrapper.csproj" />
+    <ProjectReference Include="..\..\gphoto2_cl_binding\gphoto2_cl_binding\gphoto2_cl_binding.csproj" />
   </ItemGroup>
 </Project>
