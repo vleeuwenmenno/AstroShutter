@@ -27,7 +27,7 @@ namespace AstroShutter
 			cameraList.SelectedIndexChanged += new EventHandler<EventArgs>(cameraList_selectedIndexChanged);
 			cameraList.MouseDoubleClick += new EventHandler<MouseEventArgs>(cameraList_mouseDoubleClick);
 
-			foreach (Camera cam in Cli.AutoDetect())
+			foreach (Camera cam in Cli.AutoDetect(true))
 			{
 				cameraList.Items.Add($"{cam.model} (Port: {cam.port})" + (cam.isLocked ? " (In use)": ""));
 			}
@@ -47,7 +47,7 @@ namespace AstroShutter
 
 			layout.AddRow(new Label { Text = "Cameras:"});
 			layout.AddSeparateRow(cameraList);
-			layout.AddSeparateRow(null, connBtn, refreshBtn, cancelBtn, null);
+			layout.AddSeparateRow(null, connBtn, null, refreshBtn, null, cancelBtn, null);
 
 			this.Content = layout;
 
@@ -61,7 +61,7 @@ namespace AstroShutter
 
         private void cameraWatch_elapsed(object sender, ElapsedEventArgs e)
         {
-            if (cameras.Count != Cli.AutoDetect().Count)
+            if (cameras.Count != Cli.AutoDetect(true).Count)
 			{
 				RefreshList();
 
@@ -79,7 +79,7 @@ namespace AstroShutter
 			connBtn.Enabled  = false;
 
             cameraList.Items.Clear();
-			cameras = Cli.AutoDetect();
+			cameras = Cli.AutoDetect(true);
 			foreach (Camera cam in cameras)
 			{
 				cameraList.Items.Add($"{cam.model} (Port: {cam.port})" + (cam.isLocked ? " (In use)": ""));
@@ -89,7 +89,7 @@ namespace AstroShutter
         private void cameraList_selectedIndexChanged(object sender, EventArgs e)
         {			
 			new System.Threading.Thread(() => {
-				cameras = Cli.AutoDetect();
+				cameras = Cli.AutoDetect(true);
 				if (cameraList.SelectedIndex != -1 && cameras.Count >= cameraList.SelectedIndex && !cameras[selectedCamera].isLocked)
 				{
 					selectedCamera = cameraList.SelectedIndex;
@@ -114,7 +114,7 @@ namespace AstroShutter
 
         private void cameraList_mouseDoubleClick(object sender, MouseEventArgs e)
         {
-			List<Camera> cameras = Cli.AutoDetect();
+			List<Camera> cameras = Cli.AutoDetect(true);
             if (cameraList.SelectedIndex != -1 && cameras.Count >= cameraList.SelectedIndex)
 			{
 				selectedCamera = cameraList.SelectedIndex;

@@ -1,25 +1,37 @@
 using System.IO;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using System;
+using AstroShutter.CliWrapper;
 
 namespace AstroShutter
 {
     public class Program
     {
         public string subject {get; set;}
-        public bool downloadAfterwards {get; set;}
-        public bool downloadImmediatly {get; set;}
+        public bool createDir {get;set;}
+        public bool createSubDir {get;set;}
+        public bool downloadIm {get;set;}
+        public bool downloadAft {get;set;}
         public bool requestUserInput {get; set;}
-        // public bool convertToRawAfterDownload {get; set;}
         public string saveDirectory {get;set;}
         public List<ProgramEntry> entries;
+
+        public bool sequenceStarted;
+        public bool sequenceFinished;
+        public DateTime? sequenceStartedAt;
 
         public Program()
         { }
 
         public void Save(string path)
         {
-            File.WriteAllText(path, JsonConvert.SerializeObject(this));
+            File.WriteAllText(path, JsonConvert.SerializeObject(this, Formatting.Indented));
+        }
+
+        public string JsonString()
+        {
+            return JsonConvert.SerializeObject(this, Formatting.Indented);
         }
 
         public static Program Load(string path)
@@ -36,6 +48,10 @@ namespace AstroShutter
         public bool isBulb {get; set;}
         public string iso {get; set;}
         public string imageQuality {get; set;}
+
+
+        public bool queueBegun {get;set;}
+        public List<List<string>> exposuresDone {get;set;}
 
         public ProgramEntry()
         {
