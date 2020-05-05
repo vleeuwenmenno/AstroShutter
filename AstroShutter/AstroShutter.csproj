@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="Eto.Forms" Version="2.5.0" />
     <PackageReference Include="Eto.Serialization.Xaml" Version="2.5.0" />
+    <PackageReference Include="NDCRaw" Version="0.5.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
   

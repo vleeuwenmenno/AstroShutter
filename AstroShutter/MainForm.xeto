@@ -29,12 +29,26 @@
         <TableRow>
             <TableCell>
                 <StackLayout Padding="5" Orientation="Horizontal">
-                    <Panel Padding="8,0,8,0">
-                        <Button ID="capturePreviewBtn" Text="Capture Preview" Click="capturePreviewBtn_Click"/>
-                    </Panel>
-                    <Panel Padding="8,0,8,0">
-                        <Button ID="captureSequenceBtn" Text="Capture" Click="captureSequenceBtn_Click" />
-                    </Panel>
+                    <DynamicLayout>
+                        <DynamicLayout Spacing="8,8">
+                            <DynamicRow>
+                                <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                    <Panel Padding="8,0,8,0">
+                                        <Button ID="capturePreviewBtn" Text="Capture Preview" Click="capturePreviewBtn_Click"/>
+                                    </Panel>
+                                    <Panel Padding="8,0,8,0">
+                                        <Button ID="captureSequenceBtn" Text="Capture" Click="captureSequenceBtn_Click" />
+                                    </Panel>
+                                </StackLayout>
+                                <Panel Padding="8,0,8,0">
+                                    <Button Text="+" Click="zoomPlus_Click"/>
+                                </Panel>
+                                <Panel Padding="8,0,8,0">
+                                    <Button Text="-" Click="zoomMinus_Click" />
+                                </Panel>
+                            </DynamicRow>
+                        </DynamicLayout>
+                    </DynamicLayout>
                 </StackLayout>
             </TableCell>
         </TableRow>
@@ -53,7 +67,9 @@
                                         </GroupBox>
                                     </TableRow>
                                     <TableRow>
-                                        <ImageView ID="cameraPreviewImg"/>
+                                        <Scrollable ID="cameraPreviewImgScrollable">
+                                            <ImageView ID="cameraPreviewImg"/>
+                                        </Scrollable>
                                     </TableRow>
                                 </TableLayout>
                             </Splitter.Panel1>
@@ -234,7 +250,14 @@
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
                                                                 <Label Text="Download immediately: " />
                                                             </StackLayout>
-                                                            <CheckBox ID="downloadImChk" ToolTip="Download every photo immediately after it has been taken."/>
+                                                            <CheckBox ID="downloadImChk" ToolTip="Download every photo immediately after it has been taken." Checked="True"/>
+                                                        </DynamicRow>
+
+                                                        <DynamicRow>
+                                                            <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
+                                                                <Label Text="Preview downloaded image: " />
+                                                            </StackLayout>
+                                                            <CheckBox ID="previewDownloadedChk" ToolTip="Previews the last taken image in the preview window."  Checked="True"/>
                                                         </DynamicRow>
 
                                                         <DynamicRow>
@@ -248,28 +271,28 @@
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
                                                                 <Label Text="Folders with image type: " />
                                                             </StackLayout>
-                                                            <CheckBox ID="makeImageTypeDirChk" ToolTip="Move downloaded photos to a folder based on their image type. (Example LIGHT/PHOTO.CR2 or DARK/PHOTO.CR2)"/>
+                                                            <CheckBox ID="makeImageTypeDirChk" ToolTip="Move downloaded photos to a folder based on their image type. (Example LIGHT/PHOTO.CR2 or DARK/PHOTO.CR2)"  Checked="True"/>
                                                         </DynamicRow>
 
                                                         <DynamicRow>
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
                                                                 <Label Text="Create project directory: " />
                                                             </StackLayout>
-                                                            <CheckBox ID="createDirChk" ToolTip="Creates a directory to download your photos to, the directory will be named after the subject."/>
+                                                            <CheckBox ID="createDirChk" ToolTip="Creates a directory to download your photos to, the directory will be named after the subject." Enabled="False" Checked="True"/>
                                                         </DynamicRow>
 
                                                         <DynamicRow>
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
                                                                 <Label Text="Create dated sub-directories: " />
                                                             </StackLayout>
-                                                            <CheckBox ID="createSubDirChk" ToolTip="Creates a sub-directory with the current date to download your photos to."/>
+                                                            <CheckBox ID="createSubDirChk" ToolTip="Creates a sub-directory with the current date to download your photos to." Checked="True"/>
                                                         </DynamicRow>
 
                                                         <DynamicRow>
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
                                                                 <Label Text="Pause between entries: " />
                                                             </StackLayout>
-                                                            <CheckBox ID="requestUserInputChk" ToolTip="Show a popup between entries to allow installing/removing flat filters or lens caps." Checked="True"/>
+                                                            <CheckBox ID="requestUserInputChk" ToolTip="Show a popup between entries to allow installing/removing flat filters or lens caps."/>
                                                         </DynamicRow>
 
                                                         <!-- <DynamicRow>
@@ -281,7 +304,7 @@
 
                                                         <DynamicRow>
                                                             <StackLayout Padding="8" Orientation="Horizontal" Spacing="8" VerticalContentAlignment="Center">
-                                                                <Label Text="Directory: " />
+                                                                <Label Text="Project directory: " />
                                                             </StackLayout>
                                                             <TextBox ID="projectDirectoryTxt" Text="" ReadOnly="True" ToolTip="The directory to save your photos to. (Double click to browse)"/>
                                                         </DynamicRow>

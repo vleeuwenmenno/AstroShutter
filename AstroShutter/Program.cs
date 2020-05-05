@@ -15,6 +15,8 @@ namespace AstroShutter
         public bool renamePhotos {get;set;}
         public bool makeImageTypeDir {get;set;}
         public bool requestUserInput {get; set;}
+        public bool previewDownloaded {get; set;}
+
         public string saveDirectory {get;set;}
         public List<ProgramEntry> entries;
 

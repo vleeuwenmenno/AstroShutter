@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Linq;
 using System.IO;
 using System.Threading;
 using System;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 using gphoto2_cl_binding;
+using NDCRaw;
 
 namespace AstroShutter
 {	
@@ -70,6 +73,7 @@ namespace AstroShutter
 		private readonly ButtonMenuItem saveProjectBtn;
 		private readonly ButtonMenuItem saveAsProjectBtn;
 
+		private readonly Scrollable cameraPreviewImgScrollable;
 		private readonly ImageView cameraPreviewImg;
 
 		private readonly ListBox projectListBoxExp;
@@ -86,6 +90,7 @@ namespace AstroShutter
 		private readonly CheckBox createDirChk;
 		private readonly CheckBox renamePhotosChk;
 		private readonly CheckBox makeImageTypeDirChk;
+		private readonly CheckBox previewDownloadedChk;
 
 		#endregion
 
@@ -132,6 +137,7 @@ namespace AstroShutter
             abortBtn = FindChild<Button>("abortBtn");
 
             cameraPreviewImg = FindChild<ImageView>("cameraPreviewImg");
+            cameraPreviewImgScrollable = FindChild<Scrollable>("cameraPreviewImgScrollable");
 
 			projectListBoxExp = FindChild<ListBox>("projectListBoxExp");
 			projectListBoxShut = FindChild<ListBox>("projectListBoxShut");
@@ -147,6 +153,7 @@ namespace AstroShutter
 			createDirChk = FindChild<CheckBox>("createDirChk");
 			makeImageTypeDirChk = FindChild<CheckBox>("makeImageTypeDirChk");
 			renamePhotosChk = FindChild<CheckBox>("renamePhotosChk");
+			previewDownloadedChk = FindChild<CheckBox>("previewDownloadedChk");
 
 			#endregion
 
@@ -189,10 +196,15 @@ namespace AstroShutter
 			createDirChk.CheckedChanged += new EventHandler<EventArgs>(createDirChk_CheckedChanged);
 			renamePhotosChk.CheckedChanged += new EventHandler<EventArgs>(renamePhotosChk_CheckedChanged);
 			makeImageTypeDirChk.CheckedChanged += new EventHandler<EventArgs>(makeImageTypeDirChk_CheckedChanged);
+			previewDownloadedChk.CheckedChanged += new EventHandler<EventArgs>(previewDownloadedChk_CheckedChanged);
 			
 			#endregion
 
 			mainTableLayout.Enabled = false;
+			
+			cameraPreviewImgScrollable.Cursor = Cursors.Move;
+			cameraPreviewImgScrollable.MinimumZoom = 0.01f;
+			cameraPreviewImgScrollable.MaximumZoom = 100f;
 
 			program = new Program { entries = new List<ProgramEntry>() };
 			UpdateProgramEntries();
@@ -276,21 +288,54 @@ namespace AstroShutter
             }  
         }  
 
+		private void preparePreview(string imgPath, bool isRaw = false)
+		{
+			new Thread(() =>
+			{
+				if (isRaw)
+				{
+					// Convert the raw image into a bitmap
+					var options = new DCRawOptions();
+					var dcraw = new DCRaw(options);
+					DCRawResult outfile = dcraw.Convert(imgPath);
+					Application.Instance.Invoke(() => cameraPreviewImg.Image = new Bitmap(outfile.OutputFilename));
+					File.Delete(outfile.OutputFilename);
+				}
+				else
+					Application.Instance.Invoke(() => cameraPreviewImg.Image = new Bitmap(imgPath));
+			}).Start();
+		}
+
 		private void captureProgram()
 		{
-			finishedAtTime = null;
-			program.sequenceStarted = true;
-			program.sequenceStartedAt = DateTime.Now;
-
 			string saveFilePath = program.saveDirectory;
-			if (program.createDir)
-				saveFilePath += $"/{program.subject}";
 
-			if (program.createSubDir)
-				saveFilePath += $"/{DateTime.Now.ToString("yyyy-MM-dd")}";
+			if (program.downloadIm || program.downloadAft)
+			{
+				if (program.createDir)
+					saveFilePath += $"/{program.subject}";
 
-			if (!Directory.Exists(saveFilePath))
-				Directory.CreateDirectory(saveFilePath);
+				if (program.createSubDir)
+					saveFilePath += $"/{DateTime.Now.ToString("yyyy-MM-dd")}";
+
+				if (!Directory.Exists(saveFilePath))
+					Directory.CreateDirectory(saveFilePath);
+				else if (program.sequenceStarted && Directory.Exists(saveFilePath))
+				{
+					Application.Instance.Invoke(() =>
+					{
+						DialogResult res = MessageBox.Show("Project directory alread exists, do you want to continue? Be careful because this can overwrite any existing files.", MessageBoxButtons.YesNo, MessageBoxType.Warning);
+						if (res == DialogResult.No)
+						{
+							return;
+						}
+					});
+				}
+			}
+			
+			program.sequenceStarted = true;
+			finishedAtTime = null;
+			program.sequenceStartedAt = DateTime.Now;
 
 			foreach (ProgramEntry entry in program.entries)
 			{					
@@ -350,6 +395,7 @@ namespace AstroShutter
 
 					program.subject = projectSubjectTxt.Text;
 					program.saveDirectory = projectDirectoryTxt.Text;
+					program.previewDownloaded = (bool)previewDownloadedChk.Checked;
 					program.downloadIm = (bool)downloadImChk.Checked;
 					program.downloadAft = (bool)downloadAftChk.Checked;
 					program.requestUserInput = (bool)requestUserInputChk.Checked;
@@ -358,26 +404,31 @@ namespace AstroShutter
 					program.makeImageTypeDir = (bool)makeImageTypeDirChk.Checked;
 					program.renamePhotos = (bool)renamePhotosChk.Checked;
 
-					Application.Instance.Invoke(() => this.Title = $"AstroShutter v0.0.3 - [{projectJsonPath}]");
-					Application.Instance.Invoke(() => lblBusyMessage.Text = msg + " and saved state to project file");
-
+					Application.Instance.Invoke(() => lblBusyMessage.Text = msg);
 					program.Save(projectJsonPath);
-					
-					Thread.Sleep(500);
+
 					if (program.downloadIm)
 					{
+						string initial = $"{saveFilePath}/" + (program.makeImageTypeDir ? $"{entry.shutter.ToUpper()}/" : "") + (program.renamePhotos ? entry.shutter.ToUpper() + "_" : "");
 						foreach (string filePath in files)
 						{
 							if (program.makeImageTypeDir && !Directory.Exists($"{saveFilePath}/{entry.shutter.ToUpper()}"))
 								Directory.CreateDirectory($"{saveFilePath}/{entry.shutter.ToUpper()}");
 							
-							string fileLocation = $"{saveFilePath}/" + (program.makeImageTypeDir ? $"{entry.shutter.ToUpper()}/" : "") + (program.renamePhotos ? entry.shutter.ToUpper() + "_" : "") + $"{Path.GetFileName(filePath)}";
+							string fileLocation = initial + $"{Path.GetFileName(filePath)}";
 							
-							camera.DownloadFile(fileLocation, filePath);
 							Application.Instance.Invoke(() => lblBusyMessage.Text = $"Downloading {Path.GetFileName(filePath)} to ${fileLocation} ...");
+							camera.DownloadFile(fileLocation, filePath);
+						}
+
+						if (program.previewDownloaded)
+						{
+							if (files.Any(x => x.ToUpper().EndsWith(".JPG")))
+								preparePreview(initial + Path.GetFileName(files.FirstOrDefault(x => x.ToUpper().EndsWith(".JPG"))));
+							else
+								preparePreview(initial + Path.GetFileName(files[0]), true);						
 						}
 					}
-					Thread.Sleep(500);
 
 					if (shouldBreak)
 						break;
@@ -423,6 +474,7 @@ namespace AstroShutter
 			program.saveDirectory = projectDirectoryTxt.Text;
 			program.downloadIm = (bool)downloadImChk.Checked;
 			program.downloadAft = (bool)downloadAftChk.Checked;
+			program.previewDownloaded = (bool)previewDownloadedChk.Checked;
 			program.requestUserInput = (bool)requestUserInputChk.Checked;
 			program.createDir = (bool)createDirChk.Checked;
 			program.createSubDir = (bool)createSubDirChk.Checked;
@@ -435,6 +487,11 @@ namespace AstroShutter
 
 				lblBusyMessage.Text = "Program completed!";
 
+				captureSequenceBtn.Enabled = true;
+				capturePreviewBtn.Enabled = true;
+				startAndPauseBtn.Enabled = false;
+
+				captureSequenceBtn.Text = "Edit program";
 				startAndPauseBtn.Text = "Start";
 				abortBtn.Text = "Reset";
 			});
@@ -483,8 +540,27 @@ namespace AstroShutter
         {
             if (downloadImChk.Checked == true)
 				downloadAftChk.Checked = false;
+
+			if (downloadImChk.Checked != true)
+				previewDownloadedChk.Checked = false;
 			
 			program.downloadIm = (bool)downloadImChk.Checked;
+			ValidateTitle();
+        }
+
+		private void previewDownloadedChk_CheckedChanged(object sender, EventArgs e)
+        {
+			if (previewDownloadedChk.Checked == true)
+			{
+				downloadImChk.Checked = true;
+				downloadImChk.Enabled = false;
+			}
+			else
+			{
+				downloadImChk.Enabled = true;
+			}
+
+			program.previewDownloaded = (bool)previewDownloadedChk.Checked;
 			ValidateTitle();
         }
 
@@ -750,6 +826,18 @@ namespace AstroShutter
 
 		#region Click Events
 
+		private void zoomMinus_Click(object sender, EventArgs e)
+		{
+			cameraPreviewImgScrollable.Zoom -= 0.1f;
+			cameraPreviewImgScrollable.UpdateScrollSizes();
+		}
+
+		private void zoomPlus_Click(object sender, EventArgs e)
+		{
+			cameraPreviewImgScrollable.Zoom += 0.1f;
+			cameraPreviewImgScrollable.UpdateScrollSizes();
+		}
+
         private void projectListBox_DoubleClick(object sender, MouseEventArgs e)
 		{
 			editingEntry = projectListBoxExp.SelectedIndex-1;
@@ -840,6 +928,12 @@ namespace AstroShutter
 		{
 			ProgramEntry entry = program.entries[editingEntry];
 
+			if (exposuresTxt.Text == "" || !int.TryParse(exposuresTxt.Text, out int i))
+			{
+				MessageBox.Show($"Exposure `{exposuresTxt.Text}` is not a valid integer.", MessageBoxType.Error);
+				return;
+			}
+
 			entry.exposures = int.Parse(exposuresTxt.Text);
 			entry.shutter = imageTypeTxt.Text;
 			entry.isBulb = shutterSpeedComboBox.Text == "bulb";
@@ -907,6 +1001,34 @@ namespace AstroShutter
 				lblBusyMessage.Text = "Pausing, please wait while the last capture to completes...";
 				return;
 			}
+			
+			if (projectJsonPath == "")
+			{
+				DialogResult res = MessageBox.Show("Cannot begin capturing without saving the project file, do you want to save it now?", MessageBoxButtons.YesNo, MessageBoxType.Warning);
+
+				if (res == DialogResult.Yes)
+					saveProjectBtn.PerformClick();
+				else
+					return;
+			}
+			
+			if (string.IsNullOrEmpty(program.subject))
+			{
+				MessageBox.Show("Subject field cannot be empty, please enter a subject before starting.", MessageBoxType.Warning);
+				return;
+			}
+
+			if (string.IsNullOrEmpty(program.saveDirectory) && program.downloadIm || string.IsNullOrEmpty(program.saveDirectory) && program.downloadAft)
+			{
+				MessageBox.Show("Save directory cannot be empty when downloading is enabled, please select a project directory before starting.", MessageBoxType.Warning);
+				return;
+			}
+
+			if (program.entries.Any(x => x.exposures == 0))
+			{
+				MessageBox.Show("Make sure entries have atleast 1 exposure, cannot continue!", MessageBoxType.Warning);
+				return;
+			}
 
 			abortBtn.Enabled = true;
 			abortBtn.Text = "Abort";
@@ -948,6 +1070,7 @@ namespace AstroShutter
 			{
 				program.subject = projectSubjectTxt.Text;
 				program.saveDirectory = projectDirectoryTxt.Text;
+				program.previewDownloaded = (bool)previewDownloadedChk.Checked;
 				program.downloadIm = (bool)downloadImChk.Checked;
 				program.downloadAft = (bool)downloadAftChk.Checked;
 				program.requestUserInput = (bool)requestUserInputChk.Checked;
@@ -1009,6 +1132,7 @@ namespace AstroShutter
 				projectSubjectTxt.Text = program.subject;
 				projectDirectoryTxt.Text = program.saveDirectory;
 				downloadImChk.Checked = program.downloadIm;
+				previewDownloadedChk.Checked = program.previewDownloaded;
 				downloadAftChk.Checked = program.downloadAft;
 				createDirChk.Checked = program.createDir;
 				createSubDirChk.Checked = program.createSubDir;
